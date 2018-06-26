@@ -10,7 +10,8 @@ contract DocVersionControl {
   string IPFShashForDocument;
   
     enum contractState {NotReady, Created, WaitForApproversSignature,
-    SignatureProvided,SignatureDenied,NewRegRequested,RegRequestGranted,RegRequestDenied}
+    SignatureProvided,SignatureDenied,NewRegRequested,
+    RegRequestGranted,RegRequestDenied}
     contractState public contState; 
     enum developerState {ReadyToSubmit, SubmittedForApproval,
     ApprovalProvided,ApprovalNotProvided}
