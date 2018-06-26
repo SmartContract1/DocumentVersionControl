@@ -23,7 +23,7 @@ contract DocVersionControl {
     GrantSuccess, RegFailure}
     newRegistrationState public newRegState;
  
-      // mappings for Doc versions / Approvers.
+      // mappings 
     mapping(address => bool) public docVersions;// versions 
    mapping(address=>string) public documentHashes; //hashes for the Doc of different version
     mapping (address=>developerState) public developers; mapping(address=>newRegistrationState) public newEntry;
