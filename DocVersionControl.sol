@@ -4,7 +4,8 @@ contract DocVersionControl {
     
     // Variables
   address public approvers;address public developer1;
-  uint  numberOfUploads;uint  numberOfApprovalsByAll; 
+  address public allapprovers;
+  uint  numberOfUploads;uint  numberOfApprovals; 
   uint numberOfRequestsByDevelopers; uint  numberOfNewRequests;
   string public documentInfo; 
   string IPFShashForDocument;
@@ -45,6 +46,10 @@ contract DocVersionControl {
             require(msg.sender!=developer1);
             _;
         }
+         modifier AllApprovers{ 
+                require(msg.sender==allapprovers); 
+                _;
+            }
     //events
     event ContractCreated(address owner, string info);
     event DocumentUploaded(address developer1, string info);
@@ -77,7 +82,7 @@ function createContract()OnlyApprover public {
   ContractCreated(msg.sender, "Smart Contract created by Approver A1.");
 }
 
-/* offline -----> developer adds document on IPFS */
+/* offline -----> developer adds document (initial version) on IPFS */
  
 function requestForApproval(address developerAddress, string documentHash) NotApprover OnlyDeveloper1 public {
  require(contState==contractState.Created && developers[developerAddress] == developerState.ReadyToSubmit);
@@ -85,7 +90,7 @@ function requestForApproval(address developerAddress, string documentHash) NotAp
   contState = contractState.WaitForApproversSignature;
   documentHashes[developerAddress] = documentHash; //update mapping
   devState=developerState.SubmittedForApproval;
-  ApprovalRequested(msg.sender, " Signature awaited from 'all' approvers to update Version 1.0 on IPFS ");
+  ApprovalRequested(msg.sender, " Signature awaited from 'all' or '2/3rd' of approvers to update Version 1.0 on IPFS  ");
   numberOfUploads +=1;
   numberOfRequestsByDevelopers+=1;
 }
@@ -93,21 +98,20 @@ function provideApprovalToUpload(address developerAddress) OnlyApprover public {
  require(contState==contractState.WaitForApproversSignature && (developers[developerAddress]==developerState.SubmittedForApproval));
  require( apprState==approverState.WaitingToSign);
   
-  if(keccak256(documentHashes[developerAddress]) == keccak256(IPFShashForDocument)) {
+ if(keccak256(documentHashes[developerAddress]) == keccak256(IPFShashForDocument)) {
  developers[developerAddress]= developerState.ApprovalProvided;
  contState=contractState.SignatureProvided;
- NewVersionSigned(msg.sender, "Document Version 1.0 : Approved by All Registered Approvers in the Chain");
+ NewVersionSigned(msg.sender, "Document Version 1.0 : Approved by 2/3rd of total Registered Approvers in the Chain");
  docVersions[developerAddress]=true;
  apprState=approverState.ApprovalSuccess;
  devState=developerState.ApprovalProvided;
- numberOfApprovalsByAll +=1;
- ApprovalGranted(developerAddress, "Request Granted: Publish the new Version on IPFS.");  }
+ numberOfApprovals+=1;
+ ApprovalGranted(developerAddress,"Request Granted: Publish the new Version on IPFS.");  }
  
  else if(keccak256(documentHashes[developerAddress])!= keccak256(IPFShashForDocument)) {
-     
- developers[developerAddress]= developerState.ApprovalNotProvided;
+  developers[developerAddress]= developerState.ApprovalNotProvided;
   contState=contractState.SignatureDenied;
- SignatureNotProvidedbyAll(msg.sender, "Document not approved by all");
+ SignatureNotProvidedbyAll(msg.sender, "Document not approved by even 2/3rd of Registered Approvers");
  docVersions[developerAddress]=false;
   apprState=approverState.ApprovalFailed;
  ApprovalRejected(developerAddress, " Not Allowed : to modify existing version.");
@@ -134,8 +138,8 @@ if(result==true){
  else if(result==false) {
        contState=contractState.RegRequestDenied;
        DenyRequest(newEntryAddress,"Registration Denied.");
-       newRegState=newRegistrationState.RegFailure; apprState=approverState.NewApprovalsSuccess;
-       apprState=approverState.NewApprovalsFailed;}
+       newRegState=newRegistrationState.RegFailure; apprState=approverState.NewApprovalsFailed;
+       }
   }
     
 }
