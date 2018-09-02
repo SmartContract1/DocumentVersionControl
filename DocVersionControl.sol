@@ -44,12 +44,13 @@ contract DocVersionControl {
         }
         modifier NotDeveloper1{
             require(msg.sender!=developer1);
-            _;
-        }
-         modifier AllApprovers{ 
+            _;}
+            
+        modifier AllApprovers{ 
                 require(msg.sender==allapprovers); 
                 _;
             }
+       
     //events
     event ContractCreated(address owner, string info);
     event DocumentUploaded(address developer1, string info);
@@ -72,7 +73,7 @@ contract DocVersionControl {
     apprState=approverState.WaitingToSign;
     newRegState=newRegistrationState.WaitToRegister;
     developer1= 0x14723a09acff6d2a60dcdf7aa4aff308fddc160c;
-    numberOfApprovalsByAll = 0; numberOfUploads = 0;
+    numberOfApprovals = 0; numberOfUploads = 0;
     numberOfNewRequests=0; numberOfRequestsByDevelopers=0;
   }
 //functions 
@@ -82,19 +83,19 @@ function createContract()OnlyApprover public {
   ContractCreated(msg.sender, "Smart Contract created by Approver A1.");
 }
 
-/* offline -----> developer adds document (initial version) on IPFS */
+/* offline -----> developer adds document on IPFS */
  
-function requestForApproval(address developerAddress, string documentHash) NotApprover OnlyDeveloper1 public {
+function requestForApproval(address developerAddress, string documentHash) NotApprover  public {
  require(contState==contractState.Created && developers[developerAddress] == developerState.ReadyToSubmit);
   developers[developerAddress] = developerState.SubmittedForApproval;
   contState = contractState.WaitForApproversSignature;
   documentHashes[developerAddress] = documentHash; //update mapping
   devState=developerState.SubmittedForApproval;
-  ApprovalRequested(msg.sender, " Signature awaited from 'all' or '2/3rd' of approvers to update Version 1.0 on IPFS  ");
+  ApprovalRequested(msg.sender, " Signature awaited from 'all' or '2/3rd' of approvers to update Version 1.0 on IPFS ");
   numberOfUploads +=1;
   numberOfRequestsByDevelopers+=1;
 }
-function provideApprovalToUpload(address developerAddress) OnlyApprover public {
+function provideApprovalToUpload(address developerAddress) OnlyApprover  public {
  require(contState==contractState.WaitForApproversSignature && (developers[developerAddress]==developerState.SubmittedForApproval));
  require( apprState==approverState.WaitingToSign);
   
@@ -105,16 +106,17 @@ function provideApprovalToUpload(address developerAddress) OnlyApprover public {
  docVersions[developerAddress]=true;
  apprState=approverState.ApprovalSuccess;
  devState=developerState.ApprovalProvided;
- numberOfApprovals+=1;
- ApprovalGranted(developerAddress,"Request Granted: Publish the new Version on IPFS.");  }
+ numberOfApprovals +=1;
+ ApprovalGranted(developerAddress, "Request Granted: Publish the new Version on IPFS.");  }
  
  else if(keccak256(documentHashes[developerAddress])!= keccak256(IPFShashForDocument)) {
-  developers[developerAddress]= developerState.ApprovalNotProvided;
+     
+ developers[developerAddress]= developerState.ApprovalNotProvided;
   contState=contractState.SignatureDenied;
  SignatureNotProvidedbyAll(msg.sender, "Document not approved by even 2/3rd of Registered Approvers");
  docVersions[developerAddress]=false;
   apprState=approverState.ApprovalFailed;
- ApprovalRejected(developerAddress, " Not Allowed : to modify existing version.");
+ ApprovalRejected(developerAddress, " Not Allowed to modify existing version.");
  devState=developerState.ApprovalNotProvided; }
 }
 function requestNewRegistration(address newEntryAddress)NotDeveloper1 public {
@@ -126,7 +128,7 @@ require(contState==contractState.SignatureProvided && newEntry[newEntryAddress]=
    numberOfNewRequests+=1;
    NewRegistrationRequested(msg.sender, "Grant approval / permission to register as a new entity.");}
     
-function requestGranted(address newEntryAddress, address developers, address regdApprovers ,bool result) public {
+function voteToApprove(address newEntryAddress, address developers, address regdApprovers ,bool result) public {
 require(contState == contractState.NewRegRequested || apprState==approverState.WaitingToSign );
 
 if(result==true){
@@ -138,10 +140,8 @@ if(result==true){
  else if(result==false) {
        contState=contractState.RegRequestDenied;
        DenyRequest(newEntryAddress,"Registration Denied.");
-       newRegState=newRegistrationState.RegFailure; apprState=approverState.NewApprovalsFailed;
-       }
+       newRegState=newRegistrationState.RegFailure; //apprState=approverState.NewApprovalsSuccess;
+       apprState=approverState.NewApprovalsFailed;}
   }
     
 }
-   
-   
