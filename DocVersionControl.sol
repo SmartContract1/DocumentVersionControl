@@ -91,7 +91,7 @@ function requestForApproval(address developerAddress, string documentHash) NotAp
   contState = contractState.WaitForApproversSignature;
   documentHashes[developerAddress] = documentHash; //update mapping
   devState=developerState.SubmittedForApproval;
-  ApprovalRequested(msg.sender, " Signature awaited from 'all' or '2/3rd' of approvers to update Version 1.0 on IPFS ");
+  ApprovalRequested(msg.sender, " Signature awaited from 'all' or atleast by '2/3rd' of approvers to update Version 1.0 on IPFS ");
   numberOfUploads +=1;
   numberOfRequestsByDevelopers+=1;
 }
@@ -102,7 +102,7 @@ function provideApprovalToUpload(address developerAddress) OnlyApprover  public 
  if(keccak256(documentHashes[developerAddress]) == keccak256(IPFShashForDocument)) {
  developers[developerAddress]= developerState.ApprovalProvided;
  contState=contractState.SignatureProvided;
- NewVersionSigned(msg.sender, "Document Version 1.0 : Approved by 2/3rd of total Registered Approvers in the Chain");
+ NewVersionSigned(msg.sender, "Document Version 1.0 : Approved by all or atleast 2/3rd of Registered Approvers in the Chain");
  docVersions[developerAddress]=true;
  apprState=approverState.ApprovalSuccess;
  devState=developerState.ApprovalProvided;
